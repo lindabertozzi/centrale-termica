@@ -80,7 +80,7 @@ if client is None:
     st.info("Configura la chiave GROQ_API_KEY nei Secrets di Streamlit per parlare con l'assistente.")
 else:
     # Qui inserisci il codice della chat (messaggi, input, ecc.) che abbiamo visto prima
-    system_prompt = system_prompt = """
+    system_prompt = """
 Sei l'Assistente Tecnico Virtuale della centrale termica dell'utente. 
 Devi rispondere basandoti RIGOROSAMENTE sulla Relazione Tecnica fornita. 
 Non inventare componenti. Se non sai una cosa, chiedi i dati dei sensori.
