@@ -57,7 +57,7 @@ with col1:
             Solare[☀️ Solare Termico]
             
             subgraph Caldaia_Gas_Insieme [Caldaia a Gas]
-                Gas_ACS[Scambiatore ACS Gas]
+                Gas_ACS{{Integrazione ACS Gas}}
                 Gas_Risc[Circuito Risc. Gas - NON USATO]
             end
         end
@@ -68,27 +68,31 @@ with col1:
             P1 --- P2
         end
 
+        %% --- COLLEGAMENTI RIPRISTINATI E CORRETTI ---
+
+        %% Collegamento Primario (Herz -> Puffer)
+        Herz -- "Mandata Calore" --> P1
+
         %% Percorso Solare
         Solare --> ESR31[Centralina ESR 31]
         ESR31 -- "dT > 8K" --> P1
 
-        %% Percorso ACS (Passaggio nel modulo Gas)
-        P1 -- "Acqua da Puffer (ACS)" --> Gas_ACS
-        Gas_ACS -- "Se T < 55°C: INTEGRA" --> Utenze[Sanitari]
-        Gas_ACS -- "Se T >= 55°C: PASSANTE" --> Utenze
+        %% Percorso ACS (Logica Decisionale)
+        P1 -- "Acqua da Puffer" --> Gas_ACS
+        Gas_ACS -- "T < 55°C: ACCENDE BRUCIATORE" --> Utenze[Sanitari]
+        Gas_ACS -- "T >= 55°C: SOLO PASSAGGIO" --> Utenze
 
         %% Percorso Riscaldamento
-        P1 -- "T > 50°C" --> K1[Relè Master K1]
-        K1 -- "Consenso" --> Herz533[Modulo Herz 533]
+        P1 -- "Mandata Riscaldamento" --> K1[Relè Master K1]
+        K1 -- "Consenso T > 50°C" --> Herz533[Modulo Herz 533]
         Herz533 --> Zone[Appartamenti Tado]
         
-        %% Nota: Gas_Risc rimane scollegato per chiarezza
-        
-        style Herz fill:#f96,stroke:#333
+        %% Stili Visivi
+        style Herz fill:#f96,stroke:#333,stroke-width:2px
         style P1 fill:#3498db,color:#fff
         style P2 fill:#3498db,color:#fff
         style Caldaia_Gas_Insieme fill:#f2f2f2,stroke:#333,stroke-dasharray: 5 5
-        style Gas_ACS fill:#ff9999
+        style Gas_ACS fill:#ff9999,stroke:#333
         style Gas_Risc fill:#cccccc,color:#666
     """
     render_mermaid(mermaid_graph)
