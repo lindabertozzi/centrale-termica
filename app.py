@@ -54,6 +54,7 @@ with col1:
             P1 --- P2
         end
         Solare --> ESR31[Centralina ESR 31]
+        Herz --> P1
         ESR31 -- "dT > 8K" --> P1
         P1 -- "ACS" --> Scambiatore[Scambiatore Gas]
         Gas --> Scambiatore
