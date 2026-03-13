@@ -3,33 +3,47 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Digital Twin Centrale Termica", layout="wide")
 
-# Funzione per renderizzare Mermaid in modo affidabile
-def st_mermaid(code: str):
+# Funzione migliorata con 'key' per evitare errori Node/removeChild
+def st_mermaid(code: str, key=None):
     html = f"""
-    <div class="mermaid">
+    <div id="mermaid-container-{key}" class="mermaid">
         {code}
     </div>
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
+        mermaid.initialize({{ 
+            startOnLoad: true, 
+            theme: 'neutral',
+            securityLevel: 'loose'
+        }});
+        // Forza il re-rendering se necessario
+        mermaid.contentLoaded();
     </script>
     """
-    components.html(html, height=600, scrolling=True)
+    # Aggiungiamo una key al componente Streamlit
+    components.html(html, height=600, scrolling=True, key=f"md_{key}")
 
 st.title("🛡️ Sistema Ibrido Herz & Solare")
 
-with st.sidebar:
-    st.header("📖 Scheda Tecnica")
-    st.info("Herz Firestar 35kW | 2000L Accumulo")
-    st.subheader("Parametri Solare")
-    st.write("Δ ON: 8.0 K / Δ OFF: 4.0 K")
+# --- SIDEBAR ---
+# Usiamo elementi semplici per evitare conflitti di rendering
+st.sidebar.title("📖 Scheda Tecnica")
+st.sidebar.markdown(f"""
+**Generatore:** Herz Firestar 35kW  
+**Accumulo:** 2000L (2x1000L)  
+**Solare:** ESR 31 (TA)  
+---
+**Parametri Solare:** - Δ ON: 8.0 K  
+- Δ OFF: 4.0 K  
+- Max Puffer: 90°C
+""")
 
+# --- LAYOUT PRINCIPALE ---
 col1, col2 = st.columns([2, 1])
 
 with col1:
     st.subheader("🔄 Schema Idraulico")
     
-    # Il tuo schema aggiornato e corretto
     mermaid_graph = """
     graph TD
         subgraph Fonti [Generazione]
@@ -58,12 +72,13 @@ with col1:
         style Herz fill:#f96,stroke:#333
         style P1 fill:#3498db,color:#fff
         style P2 fill:#3498db,color:#fff
-        style ESR31 fill:#fff9c4
-        style K1 fill:#fff9c4
     """
-    st_mermaid(mermaid_graph)
+    # Passiamo una key univoca
+    st_mermaid(mermaid_graph, key="main_diag")
 
 with col2:
     st.subheader("📝 Stato Logico")
     st.success("K1: Attivo (T > 50°C)")
-    st.warning("Solare: Standby")
+    
+    with st.expander("Dettagli Integrazione Gas"):
+        st.write("La caldaia a gas interviene solo se l'accumulo solare/biomassa è insufficiente per il setpoint ACS.")
