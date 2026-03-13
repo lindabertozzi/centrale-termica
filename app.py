@@ -56,7 +56,7 @@ with col1:
         Solare --> ESR31[Centralina ESR 31]
         Herz --> P1
         ESR31 -- "dT > 8K" --> P1
-        P1 -- "ACS" --> Scambiatore[Scambiatore Gas]
+        P1 -- "ACS" --> Gas
         Gas --> Scambiatore
         Scambiatore --> Utenze[Sanitari]
         P1 -- "T > 50C" --> K1[Rele Master K1]
