@@ -12,17 +12,26 @@ else:
     client = None # Impostiamo a None per evitare crash successivi
 
 # 2. --- FUNZIONE RENDERING MERMAID ---
+# Funzione aggiornata con scrolling forzato e contenitore flessibile
 def render_mermaid(code):
     html_code = f"""
-    <div class="mermaid">
-        {code}
+    <div id="graph-container" style="height: 100vh; width: 100%; overflow: auto;">
+        <div class="mermaid" style="display: flex; justify-content: center;">
+            {code}
+        </div>
     </div>
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});
+        mermaid.initialize({{ 
+            startOnLoad: true, 
+            theme: 'neutral',
+            securityLevel: 'loose',
+            flowchart: {{ useMaxWidth: false, htmlLabels: true }} 
+        }});
     </script>
     """
-    return components.html(html_code, height=500)
+    # Aumentiamo l'altezza a 800 per dare respiro, abilitando lo scrolling di Streamlit
+    return components.html(html_code, height=800, scrolling=True)
 
 # 3. --- SIDEBAR E LAYOUT (Il codice che avevi già) ---
 st.title("🛡️ Sistema Ibrido Herz & Solare")
