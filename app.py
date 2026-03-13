@@ -53,34 +53,43 @@ with col1:
     mermaid_graph = """
     graph TD
         subgraph Generazione
-            Herz[Caldaia Herz 35kW]
-            Solare[Pannelli Solari]
-            Gas[Caldaia Gas Backup]
+            Herz[🔥 Herz Firestar 35kW]
+            Solare[☀️ Solare Termico]
+            
+            subgraph Caldaia_Gas_Insieme [Caldaia a Gas]
+                Gas_ACS[Scambiatore ACS Gas]
+                Gas_Risc[Circuito Risc. Gas - NON USATO]
+            end
         end
+
         subgraph Accumulo
-            P1[Puffer 1 - Master]
+            P1[Puffer 1 - Master / ACS]
             P2[Puffer 2 - Slave]
             P1 --- P2
         end
-        Solare --> ESR31[Centralina ESR 31]
-        Herz --> P1
-        ESR31 -- "dT > 8K" --> P1
-        
-        %% Percorso ACS
-        P1 -- "Acqua da Puffer (ACS)" --> Gas{Caldaia GAS}
-        Gas -- "Se T < 55°C: INTEGRA" --> Utenze[Sanitari]
-        Gas -- "Se T > 55°C: SOLA LETTURA" --> Utenze
 
-        style Gas fill:#ff9999,stroke:#333
-        
-        Gas --> Scambiatore
-        Scambiatore --> Utenze[Sanitari]
-        P1 -- "T > 50C" --> K1[Rele Master K1]
+        %% Percorso Solare
+        Solare --> ESR31[Centralina ESR 31]
+        ESR31 -- "dT > 8K" --> P1
+
+        %% Percorso ACS (Passaggio nel modulo Gas)
+        P1 -- "Acqua da Puffer (ACS)" --> Gas_ACS
+        Gas_ACS -- "Se T < 55°C: INTEGRA" --> Utenze[Sanitari]
+        Gas_ACS -- "Se T >= 55°C: PASSANTE" --> Utenze
+
+        %% Percorso Riscaldamento
+        P1 -- "T > 50°C" --> K1[Relè Master K1]
         K1 -- "Consenso" --> Herz533[Modulo Herz 533]
         Herz533 --> Zone[Appartamenti Tado]
-        style Herz fill:#f96
+        
+        %% Nota: Gas_Risc rimane scollegato per chiarezza
+        
+        style Herz fill:#f96,stroke:#333
         style P1 fill:#3498db,color:#fff
         style P2 fill:#3498db,color:#fff
+        style Caldaia_Gas_Insieme fill:#f2f2f2,stroke:#333,stroke-dasharray: 5 5
+        style Gas_ACS fill:#ff9999
+        style Gas_Risc fill:#cccccc,color:#666
     """
     render_mermaid(mermaid_graph)
 
@@ -119,6 +128,9 @@ NON suggerire componenti non presenti o soluzioni generiche.
      * Se T_Puffer < 55°C: La caldaia a Gas si accende per integrare il calore mancante.
    - Sicurezza: Valvola miscelatrice meccanica esterna post-Puffer per controllo scottature.
    - Ricircolo: Gestito indipendentemente via domotica/timer.
+   - La Caldaia a Gas è visualizzata come un unico insieme ma divisa logicamente:
+     * La parte 'Gas_ACS' è l'unica attiva e funge da post-riscaldatore istantaneo.
+     * La parte 'Gas_Risc' è presente fisicamente nella caldaia ma NON è collegata ai collettori di riscaldamento, che sono alimentati esclusivamente dai Puffer.
 
 3. LOGICA RISCALDAMENTO:
    - Configurazione: 2 Zone (appartamenti) gestite da Tado (contatto pulito).
